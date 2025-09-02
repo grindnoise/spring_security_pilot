@@ -1,13 +1,13 @@
-package com.example.securitysection1.controller;
+package com.example.controller;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-public class WelcomeController {
+public class AccountController {
 
-    @GetMapping("/welcome")
-    public String welcome() {
+    @GetMapping("/myAccount")
+    public String getAccountDetails() {
         return "Welcome to Security Section 1";
     }
 
