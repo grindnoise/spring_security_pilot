@@ -1,9 +1,18 @@
 spring:
   application:
-    name: ${SPRING_APP_NAME:securitysection1}
-  security:
-    user:
-      password: pwd
+    name: ${SPRING_APP_NAME:eazybankbackend}
+  datasource:
+    url: jdbc:mysql://${DATABASE_HOST:localhost}:${DATABASE_PORT:3308}/${DATABASE_NAME:eazybank}
+    username: ${DB_USER:root}
+    password: ${DB_PWD:root}
+  jpa:
+    show-sql: ${JPA_SHOW_SQL:true}
+    properties:
+      hibernate:
+        format_sql: ${HIBERNATE_FORMAT_SQL:true}
+#  security:
+#    user:
+#      password: pwd
 
 logging:
   pattern:
