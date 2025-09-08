@@ -1,6 +1,9 @@
 spring:
   application:
     name: ${SPRING_APP_NAME:eazybankbackend}
+  config:
+    activate:
+      on-profile: prod
   datasource:
     url: jdbc:mysql://${DATABASE_HOST:localhost}:${DATABASE_PORT:3308}/${DATABASE_NAME:eazybank}
     username: ${DB_USER:root}
@@ -9,14 +12,9 @@ spring:
     show-sql: ${JPA_SHOW_SQL:true}
     properties:
       hibernate:
-        format_sql: ${HIBERNATE_FORMAT_SQL:true}
+        format_sql: ${HIBERNATE_FORMAT_SQL:false}
 #    hibernate:
 #      ddl-auto: create-drop
-  config:
-    import: application-prod.yaml
-  profiles:
-    active: ${SPRING_PROFILE:prod}
-
 #  security:
 #    user:
 #      password: pwd
@@ -27,4 +25,4 @@ logging:
   level:
     org:
       springframework:
-        security: ${SPRING_SECURITY_LOG_LEVEL:TRACE}
+        security: ${SPRING_SECURITY_LOG_LEVEL:ERROR}
