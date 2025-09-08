@@ -1,5 +1,6 @@
 package com.example.config;
 
+import com.example.exception_handling.CustomAccessDeniedHandler;
 import com.example.exception_handling.CustomBasicAuthenticationEntryPoint;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,22 +20,34 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http.csrf(AbstractHttpConfigurer::disable);
-        http.authorizeHttpRequests(requests ->
-                requests.requestMatchers(
-                                "/myBalance",
-                                "/myCards",
-                                "/myLoans",
-                                "/myAccount").authenticated()
-                        .requestMatchers(
-                                "/notices",
-                                "/register",
-                                "/contacts",
-                                "/error").permitAll());
-        http.formLogin(Customizer.withDefaults());
-        http.httpBasic(httpSecurityHttpBasicConfigurer ->
-                httpSecurityHttpBasicConfigurer.authenticationEntryPoint(new CustomBasicAuthenticationEntryPoint()));
-        http.exceptionHandling(ehc -> ehc.authenticationEntryPoint(new CustomBasicAuthenticationEntryPoint())); // Global Exception Handling
+        http.csrf(AbstractHttpConfigurer::disable)
+                .sessionManagement(smc ->
+                                smc.invalidSessionUrl("/invalidSession")
+                                        // Limit number of opened sessions (1 - totally secure)
+                                        .maximumSessions(3)
+                        // If a user reaches max opened sessions - we can restrict logging in
+//                                .maxSessionsPreventsLogin(true)
+                )
+                .authorizeHttpRequests(requests ->
+                        requests.requestMatchers(
+                                        "/myBalance",
+                                        "/myCards",
+                                        "/myLoans",
+                                        "/myAccount").authenticated()
+                                .requestMatchers(
+                                        "/notices",
+                                        "/register",
+                                        "/contacts",
+                                        "/invalidSession",
+                                        "/error").permitAll())
+                .formLogin(Customizer.withDefaults())
+                .httpBasic(httpSecurityHttpBasicConfigurer ->
+                        httpSecurityHttpBasicConfigurer.authenticationEntryPoint(new CustomBasicAuthenticationEntryPoint()))
+                .exceptionHandling(ehc -> ehc
+//            .authenticationEntryPoint(new CustomBasicAuthenticationEntryPoint())
+                                .accessDeniedHandler(new CustomAccessDeniedHandler())
+//                    .accessDeniedPage("/denied")
+                ); // Global Exception Handling
         return http.build();
     }
 
