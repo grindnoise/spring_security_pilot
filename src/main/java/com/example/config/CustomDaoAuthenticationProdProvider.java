@@ -1,6 +1,6 @@
 package com.example.config;
 
-import com.example.service.CustomUserDetailsService;
+import com.example.service.EazyBankUserDetailsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Profile;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class CustomDaoAuthenticationProdProvider implements AuthenticationProvider {
 
-    private final CustomUserDetailsService customUserDetailsService;
+    private final EazyBankUserDetailsService customUserDetailsService;
     private final PasswordEncoder passwordEncoder;
 
     @Override
