@@ -24,6 +24,7 @@ public class Customer {
     @Column(name = "mobile_number")
     private String mobileNumber;
 
+    // This prevents data from serialization
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String pwd;
 

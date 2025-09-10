@@ -2,17 +2,24 @@ package com.example.config;
 
 import com.example.exception_handling.CustomAccessDeniedHandler;
 import com.example.exception_handling.CustomBasicAuthenticationEntryPoint;
+import com.example.filter.CsrfCookieFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.security.authentication.password.CompromisedPasswordChecker;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.password.HaveIBeenPwnedRestApiPasswordChecker;
+import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
+import org.springframework.web.cors.CorsConfiguration;
+
+import java.util.List;
 
 @Profile("!prod")
 @Configuration
@@ -20,9 +27,29 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http.csrf(AbstractHttpConfigurer::disable)
+        CsrfTokenRequestAttributeHandler csrfTokenRequestAttributeHandler = new CsrfTokenRequestAttributeHandler();
+
+
+        http
+                .csrf(configurer -> configurer
+                        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+                        .csrfTokenRequestHandler(csrfTokenRequestAttributeHandler))
+                // Force add csrf token filter
+                .addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class)
+                .cors(httpSecurityCorsConfigurer -> httpSecurityCorsConfigurer.configurationSource(request -> {
+                    var config = new CorsConfiguration();
+                    config.setAllowedOrigins(List.of("http://localhost:4200"));
+                    config.setAllowedMethods(List.of("*"));
+                    config.setAllowedHeaders(List.of("*"));
+                    config.setAllowCredentials(true);
+                    config.setMaxAge(3600L);
+                    return config;
+                }))
+                .securityContext(securityContext -> securityContext.requireExplicitSave(false))
                 .sessionManagement(smc ->
-                                smc.invalidSessionUrl("/invalidSession")
+                                smc//.invalidSessionUrl("/invalidSession")
+                                        // Always create JSESSIONID to reuse
+                                        .sessionCreationPolicy(SessionCreationPolicy.ALWAYS)
                                         // Limit number of opened sessions (1 - totally secure)
                                         .maximumSessions(3)
                         // If a user reaches max opened sessions - we can restrict logging in
@@ -33,11 +60,12 @@ public class SecurityConfig {
                                         "/myBalance",
                                         "/myCards",
                                         "/myLoans",
+                                        "/user",
                                         "/myAccount").authenticated()
                                 .requestMatchers(
                                         "/notices",
                                         "/register",
-                                        "/contacts",
+                                        "/contact",
                                         "/invalidSession",
                                         "/error").permitAll())
                 .formLogin(Customizer.withDefaults())

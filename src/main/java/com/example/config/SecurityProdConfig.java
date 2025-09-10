@@ -2,16 +2,22 @@ package com.example.config;
 
 import com.example.exception_handling.CustomAccessDeniedHandler;
 import com.example.exception_handling.CustomBasicAuthenticationEntryPoint;
+import com.example.filter.CsrfCookieFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.security.authentication.password.CompromisedPasswordChecker;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.password.HaveIBeenPwnedRestApiPasswordChecker;
+import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.web.cors.CorsConfiguration;
+
+import java.util.List;
 
 import static org.springframework.security.config.Customizer.withDefaults;
 
@@ -21,12 +27,25 @@ public class SecurityProdConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http.csrf(AbstractHttpConfigurer::disable)
+        http
+                .cors(httpSecurityCorsConfigurer -> httpSecurityCorsConfigurer.configurationSource(request -> {
+                    var config = new CorsConfiguration();
+                    config.setAllowedOrigins(List.of("http://localhost:4200"));
+                    config.setAllowedMethods(List.of("*"));
+                    config.setAllowedHeaders(List.of("*"));
+                    config.setAllowCredentials(true);
+                    config.setMaxAge(3600L);
+                    return config;
+                }))
+                .csrf(configurer -> configurer.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
+                // Force add csrf token filter
+                .addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class)
                 .sessionManagement(smc ->
-                        smc.invalidSessionUrl("/invalidSession")
-                                // Limit number of opened sessions (1 - totally secure)
-                                .maximumSessions(1)
-                                // If a user reaches max opened sessions - we can restrict logging in
+                                smc.invalidSessionUrl("/invalidSession")
+                                        .sessionCreationPolicy(SessionCreationPolicy.ALWAYS)
+                                        // Limit number of opened sessions (1 - totally secure)
+                                        .maximumSessions(1)
+                        // If a user reaches max opened sessions - we can restrict logging in
 //                                .maxSessionsPreventsLogin(true)
                 )
 //        http.requiresChannel(requiresChannel -> requiresChannel.anyRequest().requiresSecure());
@@ -36,6 +55,7 @@ public class SecurityProdConfig {
                                         "/myBalance",
                                         "/myCards",
                                         "/myLoans",
+                                        "/user",
                                         "/myAccount").authenticated()
                                 .requestMatchers(
                                         "/notices",
