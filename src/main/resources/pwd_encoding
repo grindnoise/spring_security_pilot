@@ -1,0 +1,5 @@
+// Encryption
+openssl enc -aes-256-cbc -pass pass:encryption_secret -pbkdf2 -in plain.txt -out encrypt.txt -base64
+
+// Decryption
+openssl enc -aes-256-cbc  -base64 -pass pass:encryption_secret -d -pbkdf2 -in encrypt.txt -out decrypt.txt

@@ -27,13 +27,11 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        CsrfTokenRequestAttributeHandler csrfTokenRequestAttributeHandler = new CsrfTokenRequestAttributeHandler();
-
-
         http
                 .csrf(configurer -> configurer
+                        .ignoringRequestMatchers("/contact", "/register")
                         .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-                        .csrfTokenRequestHandler(csrfTokenRequestAttributeHandler))
+                        .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler()))
                 // Force add csrf token filter
                 .addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class)
                 .cors(httpSecurityCorsConfigurer -> httpSecurityCorsConfigurer.configurationSource(request -> {
@@ -55,13 +53,17 @@ public class SecurityConfig {
                         // If a user reaches max opened sessions - we can restrict logging in
 //                                .maxSessionsPreventsLogin(true)
                 )
-                .authorizeHttpRequests(requests ->
-                        requests.requestMatchers(
-                                        "/myBalance",
-                                        "/myCards",
-                                        "/myLoans",
-                                        "/user",
-                                        "/myAccount").authenticated()
+                .authorizeHttpRequests(requests -> requests
+//                        .requestMatchers("/myBalance").hasAuthority("VIEWBALANCE")
+//                        .requestMatchers("/myAccount").hasAuthority("VIEWACCOUNT")
+//                        .requestMatchers("/myCards").hasAuthority("VIEWCARDS")
+//                        .requestMatchers("/myLoans").hasAuthority("VIEWLOANS")
+                        .requestMatchers("/myBalance").hasRole("USER")
+//                        .requestMatchers("/myAccount").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers("/myAccount").hasRole("ADMINISTRATOR") // Test
+                        .requestMatchers("/myCards").hasRole("USER")
+                        .requestMatchers("/myLoans").hasRole("USER")
+                        .requestMatchers("/user").authenticated()
                                 .requestMatchers(
                                         "/notices",
                                         "/register",

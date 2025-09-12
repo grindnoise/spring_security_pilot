@@ -15,6 +15,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.password.HaveIBeenPwnedRestApiPasswordChecker;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.web.cors.CorsConfiguration;
 
 import java.util.List;
@@ -37,11 +38,14 @@ public class SecurityProdConfig {
                     config.setMaxAge(3600L);
                     return config;
                 }))
-                .csrf(configurer -> configurer.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
+                .csrf(configurer -> configurer
+                        .ignoringRequestMatchers("/contact", "/register")
+                        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+                        .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler()))
                 // Force add csrf token filter
                 .addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class)
                 .sessionManagement(smc ->
-                                smc.invalidSessionUrl("/invalidSession")
+                                smc//.invalidSessionUrl("/invalidSession")
                                         .sessionCreationPolicy(SessionCreationPolicy.ALWAYS)
                                         // Limit number of opened sessions (1 - totally secure)
                                         .maximumSessions(1)
@@ -50,17 +54,20 @@ public class SecurityProdConfig {
                 )
 //        http.requiresChannel(requiresChannel -> requiresChannel.anyRequest().requiresSecure());
                 .redirectToHttps(withDefaults())
-                .authorizeHttpRequests(requests ->
-                        requests.requestMatchers(
-                                        "/myBalance",
-                                        "/myCards",
-                                        "/myLoans",
-                                        "/user",
-                                        "/myAccount").authenticated()
+                .authorizeHttpRequests(requests -> requests
+//                        .requestMatchers("/myBalance").hasAuthority("VIEWBALANCE")
+//                        .requestMatchers("/myAccount").hasAuthority("VIEWACCOUNT")
+//                        .requestMatchers("/myCards").hasAuthority("VIEWCARDS")
+//                        .requestMatchers("/myLoans").hasAuthority("VIEWLOANS")
+                        .requestMatchers("/myBalance").hasRole("USER")
+                        .requestMatchers("/myAccount").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers("/myCards").hasRole("USER")
+                        .requestMatchers("/myLoans").hasRole("USER")
+                        .requestMatchers("/user").authenticated()
                                 .requestMatchers(
                                         "/notices",
                                         "/register",
-                                        "/contacts",
+                                        "/contact",
                                         "/invalidSession",
                                         "/error").permitAll())
                 // Default Bootstrap html login form
