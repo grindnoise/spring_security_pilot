@@ -3,6 +3,8 @@ package com.example.config;
 import com.example.exception_handling.CustomAccessDeniedHandler;
 import com.example.exception_handling.CustomBasicAuthenticationEntryPoint;
 import com.example.filter.CsrfCookieFilter;
+import com.example.filter.JwtTokenGeneratorFilter;
+import com.example.filter.JwtTokenValidatorFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -29,6 +31,14 @@ public class SecurityProdConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+                .csrf(configurer -> configurer
+                        .ignoringRequestMatchers("/contact", "/register")
+                        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+                        .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler()))
+                // Force add csrf token filter
+                .addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class)
+                .addFilterAfter(new JwtTokenValidatorFilter(), BasicAuthenticationFilter.class)
+                .addFilterAfter(new JwtTokenGeneratorFilter(), BasicAuthenticationFilter.class)
                 .cors(httpSecurityCorsConfigurer -> httpSecurityCorsConfigurer.configurationSource(request -> {
                     var config = new CorsConfiguration();
                     config.setAllowedOrigins(List.of("http://localhost:4200"));
@@ -36,24 +46,16 @@ public class SecurityProdConfig {
                     config.setAllowedHeaders(List.of("*"));
                     config.setAllowCredentials(true);
                     config.setMaxAge(3600L);
+
+                    // Expose JWT headers
+                    config.setExposedHeaders(List.of("Authorization"));
+
                     return config;
                 }))
-                .csrf(configurer -> configurer
-                        .ignoringRequestMatchers("/contact", "/register")
-                        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-                        .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler()))
                 // Force add csrf token filter
                 .addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class)
-                .sessionManagement(smc ->
-                                smc//.invalidSessionUrl("/invalidSession")
-                                        .sessionCreationPolicy(SessionCreationPolicy.ALWAYS)
-                                        // Limit number of opened sessions (1 - totally secure)
-                                        .maximumSessions(1)
-                        // If a user reaches max opened sessions - we can restrict logging in
-//                                .maxSessionsPreventsLogin(true)
-                )
-//        http.requiresChannel(requiresChannel -> requiresChannel.anyRequest().requiresSecure());
-                .redirectToHttps(withDefaults())
+                .sessionManagement(smc -> smc.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // JWT
+                .redirectToHttps(withDefaults()) // Secure https
                 .authorizeHttpRequests(requests -> requests
 //                        .requestMatchers("/myBalance").hasAuthority("VIEWBALANCE")
 //                        .requestMatchers("/myAccount").hasAuthority("VIEWACCOUNT")

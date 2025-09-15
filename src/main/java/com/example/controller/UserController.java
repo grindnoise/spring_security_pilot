@@ -1,10 +1,14 @@
 package com.example.controller;
 
+import com.example.dto.LoginRequestDto;
+import com.example.dto.LoginResponseDto;
 import com.example.entity.Customer;
 import com.example.repository.CustomerRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -21,6 +25,7 @@ public class UserController {
 
     private final CustomerRepository customerRepository;
     private final PasswordEncoder passwordEncoder;
+    AuthenticationManager authenticationManager;
 
     @PostMapping("/register")
     public ResponseEntity<String> registerUser(@RequestBody Customer customer) {
@@ -40,6 +45,16 @@ public class UserController {
         } catch (Exception ex) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).
                     body("An exception occurred: " + ex.getMessage());
+        }
+    }
+
+    @PostMapping("/apiLogin")
+    public ResponseEntity<LoginResponseDto> apiLogin(@RequestBody LoginRequestDto loginRequest) {
+        String jwt = null;
+        Authentication authentication = UsernamePasswordAuthenticationToken.unauthenticated(loginRequest.username(), loginRequest.password());
+        Authentication response = authenticationManager.authenticate(authentication);
+        if (response != null && response.isAuthenticated()) {
+
         }
     }
 

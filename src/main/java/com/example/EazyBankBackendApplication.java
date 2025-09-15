@@ -6,6 +6,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @Slf4j
 @SpringBootApplication
+//@EnableWebSecurity(debug = true)
 // Use if entities/repositories are outside the src root
 //@EntityScan("com.example.entity")
 //@EnableJpaRepositories("com.example.repository")
