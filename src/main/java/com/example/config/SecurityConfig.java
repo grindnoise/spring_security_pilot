@@ -36,7 +36,7 @@ public class SecurityConfig {
 
         http
                 .csrf(configurer -> configurer
-                        .ignoringRequestMatchers("/contact", "/register")
+                        .ignoringRequestMatchers("/contact", "/register", "/apiLogin")
                         .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
                         .csrfTokenRequestHandler(csrfTokenRequestAttributeHandler))
                 // Force add csrf token filter
@@ -89,7 +89,8 @@ public class SecurityConfig {
                                 "/register",
                                 "/contact",
                                 "/invalidSession",
-                                "/error").permitAll())
+                                "/error",
+                                "/apiLogin").permitAll())
                 .formLogin(Customizer.withDefaults())
                 .httpBasic(httpSecurityHttpBasicConfigurer ->
                         httpSecurityHttpBasicConfigurer.authenticationEntryPoint(new CustomBasicAuthenticationEntryPoint()))
@@ -121,6 +122,8 @@ public class SecurityConfig {
         return new HaveIBeenPwnedRestApiPasswordChecker();
     }
 
+
+    // We need to create a bean to manually call authenticate()
     @Bean
     public AuthenticationManager authenticationManager(UserDetailsService userDetailsService, PasswordEncoder passwordEncoder) {
         CustomDaoAuthenticationProvider authenticationProvider = new CustomDaoAuthenticationProvider(userDetailsService, passwordEncoder);
