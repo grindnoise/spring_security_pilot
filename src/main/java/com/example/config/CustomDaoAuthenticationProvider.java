@@ -1,5 +1,6 @@
 package com.example.config;
 
+import com.example.dto.AuthorizedUser;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Profile;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -18,16 +19,18 @@ public class CustomDaoAuthenticationProvider implements AuthenticationProvider {
     private final UserDetailsService customUserDetailsService;
     private final PasswordEncoder passwordEncoder;
 
+//    @Override
+//    public Authentication authenticate(Authentication authentication) throws AuthenticationException {
+//        final var user = customUserDetailsService.loadUserByUsername(authentication.getName());
+//
+//        return new UsernamePasswordAuthenticationToken(user, authentication.getCredentials().toString(), user.getAuthorities());
+//    }
+
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
         final var user = customUserDetailsService.loadUserByUsername(authentication.getName());
-        final var password = authentication.getCredentials().toString();
 
-//        if (!passwordEncoder.matches(password, user.getPassword())) {
-//            throw new BadCredentialsException("Invalid password");
-//        }
-
-        return new UsernamePasswordAuthenticationToken(user, password, user.getAuthorities());
+        return new UsernamePasswordAuthenticationToken((AuthorizedUser) user, authentication.getCredentials().toString(), user.getAuthorities());
     }
 
     @Override

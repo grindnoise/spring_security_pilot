@@ -58,14 +58,13 @@ public class UserController {
 
     @PostMapping("/apiLogin")
     public ResponseEntity<LoginResponseDto> apiLogin(@RequestBody LoginRequestDto loginRequest) {
-        String jwt = "";
         // Manually call bean authenticate()
         Authentication authentication = authenticationManager.authenticate(UsernamePasswordAuthenticationToken.unauthenticated(loginRequest.username(), loginRequest.password()));
         if (authentication != null && authentication.isAuthenticated()) {
             final var secret = environment.getProperty(ApplicationConstants.JWT_SECRET_KEY, ApplicationConstants.JWT_SECRET_VALUE);
             final var secretKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
             final var curDate = new java.util.Date();
-            jwt = Jwts.builder()
+            final var jwt = Jwts.builder()
                     .issuer("superapp")
                     .claim("username", authentication.getName())
                     .claim("authorities", authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.joining(",")))
