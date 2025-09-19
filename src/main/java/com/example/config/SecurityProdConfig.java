@@ -5,6 +5,7 @@ import com.example.exception_handling.CustomBasicAuthenticationEntryPoint;
 import com.example.filter.CsrfCookieFilter;
 import com.example.filter.JwtTokenGeneratorFilter;
 import com.example.filter.JwtTokenValidatorFilter;
+import com.example.service.EazyBankUserDetailsService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -31,7 +32,7 @@ import static org.springframework.security.config.Customizer.withDefaults;
 public class SecurityProdConfig {
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, EazyBankUserDetailsService eazyBankUserDetailsService) throws Exception {
         http
                 .csrf(configurer -> configurer
                         .ignoringRequestMatchers("/contact", "/register")
@@ -39,7 +40,7 @@ public class SecurityProdConfig {
                         .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler()))
                 // Force add csrf token filter
                 .addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class)
-                .addFilterAfter(new JwtTokenValidatorFilter(), BasicAuthenticationFilter.class)
+                .addFilterAfter(new JwtTokenValidatorFilter(eazyBankUserDetailsService), BasicAuthenticationFilter.class)
                 .addFilterAfter(new JwtTokenGeneratorFilter(), BasicAuthenticationFilter.class)
                 .cors(httpSecurityCorsConfigurer -> httpSecurityCorsConfigurer.configurationSource(request -> {
                     var config = new CorsConfiguration();

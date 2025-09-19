@@ -1,6 +1,7 @@
 package com.example.controller;
 
 import com.example.constants.ApplicationConstants;
+import com.example.dto.AuthorizedUser;
 import com.example.dto.LoginRequestDto;
 import com.example.dto.LoginResponseDto;
 import com.example.entity.Customer;
@@ -64,9 +65,10 @@ public class UserController {
             final var secret = environment.getProperty(ApplicationConstants.JWT_SECRET_KEY, ApplicationConstants.JWT_SECRET_VALUE);
             final var secretKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
             final var curDate = new java.util.Date();
+            final AuthorizedUser authorizedUser = (AuthorizedUser) authentication.getPrincipal();
             final var jwt = Jwts.builder()
                     .issuer("superapp")
-                    .claim("username", authentication.getName())
+                    .claim("username", authorizedUser.getUsername())
                     .claim("authorities", authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.joining(",")))
                     .issuedAt(curDate)
                     .expiration(new java.util.Date(curDate.getTime() + 3600000))

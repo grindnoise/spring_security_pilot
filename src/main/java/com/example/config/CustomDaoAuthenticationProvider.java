@@ -1,6 +1,5 @@
 package com.example.config;
 
-import com.example.dto.AuthorizedUser;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Profile;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -30,7 +29,7 @@ public class CustomDaoAuthenticationProvider implements AuthenticationProvider {
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
         final var user = customUserDetailsService.loadUserByUsername(authentication.getName());
 
-        return new UsernamePasswordAuthenticationToken((AuthorizedUser) user, authentication.getCredentials().toString(), user.getAuthorities());
+        return new UsernamePasswordAuthenticationToken(user, authentication.getCredentials().toString(), user.getAuthorities());
     }
 
     @Override

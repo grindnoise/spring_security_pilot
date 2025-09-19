@@ -5,6 +5,7 @@ import com.example.exception_handling.CustomBasicAuthenticationEntryPoint;
 import com.example.filter.CsrfCookieFilter;
 import com.example.filter.JwtTokenGeneratorFilter;
 import com.example.filter.JwtTokenValidatorFilter;
+import com.example.service.EazyBankUserDetailsService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -32,8 +33,9 @@ import java.util.List;
 @EnableMethodSecurity(jsr250Enabled = true, prePostEnabled = true)
 public class SecurityConfig {
 
+
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, EazyBankUserDetailsService eazyBankUserDetailsService) throws Exception {
         CsrfTokenRequestAttributeHandler csrfTokenRequestAttributeHandler = new CsrfTokenRequestAttributeHandler();
 
         http
@@ -45,7 +47,7 @@ public class SecurityConfig {
 
 //                .addFilterBefore(new ExampleFilter(), BasicAuthenticationFilter.class)
                 .addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class)
-                .addFilterAfter(new JwtTokenValidatorFilter(), BasicAuthenticationFilter.class)
+                .addFilterAfter(new JwtTokenValidatorFilter(eazyBankUserDetailsService), BasicAuthenticationFilter.class)
                 .addFilterAfter(new JwtTokenGeneratorFilter(), BasicAuthenticationFilter.class)
                 .cors(httpSecurityCorsConfigurer ->
                         httpSecurityCorsConfigurer.configurationSource(request -> {
