@@ -16,6 +16,23 @@ spring:
     import: application-prod.yaml
   profiles:
     active: ${SPRING_PROFILE:prod}
+  security:
+    oauth2:
+      # JWT based
+      authorizationserver:
+        endpoint:
+          jwk-set-uri: http://localhost:8180/realms/eazybankdev/protocol/openid-connect/certs
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8180/realms/eazybankdev
+
+      # Opaque token
+#      resourceserver:
+#        opaquetoken:
+#          client-id: eazybankintrospect
+#          client-secret: 5MI1L0Mk5GtsZdm7mL4fBevlom7hziyI
+#          introspection-uri: http://localhost:8180/realms/eazybankdev/protocol/openid-connect/token/introspect
+
 
 #  security:
 #    user:

@@ -1,12 +1,12 @@
 package com.example.repository;
 
-import com.example.entity.Accounts;
+import com.example.entity.Account;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface AccountsRepository extends CrudRepository<Accounts, Long> {
+public interface AccountsRepository extends CrudRepository<Account, Long> {
 
-    Accounts findByCustomerId(long customerId);
+    Account findByCustomerId(long customerId);
 
 }

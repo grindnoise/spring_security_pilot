@@ -4,14 +4,15 @@ package com.example.entity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
-import lombok.Getter;
-import lombok.Setter;
+import jakarta.persistence.Table;
+import lombok.Data;
 
 import java.sql.Date;
 
 @Entity
-@Getter @Setter
-public class Accounts {
+@Data
+@Table(name = "accounts")
+public class Account {
 
 	@Column(name = "customer_id")
 	private long customerId;

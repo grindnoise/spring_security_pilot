@@ -18,7 +18,7 @@ CREATE TABLE `customer` (
 INSERT INTO `customer` (`name`,`email`,`mobile_number`, `pwd`, `role`,`create_dt`)
 VALUES ('Happy','happy@example.com','5334122365', '{bcrypt}$2a$12$88.f6upbBvy0okEa7OfHFuorV29qeK.sVbB9VQ6J6dWM1bW6Qef8m', 'admin',CURDATE());
 
-CREATE TABLE `accounts` (
+CREATE TABLE `account` (
                             `customer_id` int NOT NULL,
                             `account_number` int NOT NULL,
                             `account_type` varchar(100) NOT NULL,
@@ -29,7 +29,7 @@ CREATE TABLE `accounts` (
                             CONSTRAINT `customer_ibfk_1` FOREIGN KEY (`customer_id`) REFERENCES `customer` (`customer_id`) ON DELETE CASCADE
 );
 
-INSERT INTO `accounts` (`customer_id`, `account_number`, `account_type`, `branch_address`, `create_dt`)
+INSERT INTO `account` (`customer_id`, `account_number`, `account_type`, `branch_address`, `create_dt`)
 VALUES (1, 1865764534, 'Savings', '123 Main Street, New York', CURDATE());
 
 CREATE TABLE `account_transactions` (
@@ -45,7 +45,7 @@ CREATE TABLE `account_transactions` (
                                         PRIMARY KEY (`transaction_id`),
                                         KEY `customer_id` (`customer_id`),
                                         KEY `account_number` (`account_number`),
-                                        CONSTRAINT `accounts_ibfk_2` FOREIGN KEY (`account_number`) REFERENCES `accounts` (`account_number`) ON DELETE CASCADE,
+                                        CONSTRAINT `accounts_ibfk_2` FOREIGN KEY (`account_number`) REFERENCES `account` (`account_number`) ON DELETE CASCADE,
                                         CONSTRAINT `acct_user_ibfk_1` FOREIGN KEY (`customer_id`) REFERENCES `customer` (`customer_id`) ON DELETE CASCADE
 );
 
