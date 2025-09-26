@@ -2,13 +2,12 @@ package com.example.config;
 
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.core.OAuth2AuthenticatedPrincipal;
 import org.springframework.security.oauth2.server.resource.introspection.OpaqueTokenAuthenticationConverter;
 
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 public class KeycloakRoleConverterOpaque implements OpaqueTokenAuthenticationConverter {
 
@@ -23,14 +22,16 @@ public class KeycloakRoleConverterOpaque implements OpaqueTokenAuthenticationCon
     @Override
     @SuppressWarnings("unchecked")
     public Authentication convert(String introspectedToken, OAuth2AuthenticatedPrincipal authenticatedPrincipal) {
-        String username = authenticatedPrincipal.getAttribute("preferred_username");
-        Map<String, Object> realmAccess = authenticatedPrincipal.getAttribute("realm_access");
-        final var roles = ((List<String>) realmAccess.get("roles"))
+        List<String> roles = authenticatedPrincipal.getAttribute("scope");
+        if (roles == null && roles.isEmpty())
+            return new UsernamePasswordAuthenticationToken(authenticatedPrincipal.getName(), null, AuthorityUtils.NO_AUTHORITIES);
+
+        final var authorities = roles
                 .stream()
                 .map(roleName -> "ROLE_" + roleName)
                 .map(SimpleGrantedAuthority::new)
-                .collect(Collectors.toList());
+                .toList();
 
-        return new UsernamePasswordAuthenticationToken(authenticatedPrincipal.getName(), null, roles);
+        return new UsernamePasswordAuthenticationToken(authenticatedPrincipal.getName(), null, authorities);
     }
 }

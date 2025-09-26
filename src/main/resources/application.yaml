@@ -21,17 +21,27 @@ spring:
       # JWT based
       authorizationserver:
         endpoint:
-          jwk-set-uri: http://localhost:8180/realms/eazybankdev/protocol/openid-connect/certs
+          # Spring Oauth2 server
+          jwk-set-uri: http://localhost:9000/oauth2/jwks
+          # Keycloak
+      #          jwk-set-uri: http://localhost:8180/realms/eazybankdev/protocol/openid-connect/certs
       resourceserver:
         jwt:
-          issuer-uri: http://localhost:8180/realms/eazybankdev
+          # Spring Oauth2 server
+          issuer-uri: http://localhost:9000
+          # Keycloak
+#          issuer-uri: http://localhost:8180/realms/eazybankdev
 
-      # Opaque token
+#      # Opaque token
 #      resourceserver:
 #        opaquetoken:
+#          # Keycloak
+##          client-id: eazybankintrospect
+##          client-secret: 5MI1L0Mk5GtsZdm7mL4fBevlom7hziyI
+##          introspection-uri: http://localhost:8180/realms/eazybankdev/protocol/openid-connect/token/introspect
 #          client-id: eazybankintrospect
 #          client-secret: 5MI1L0Mk5GtsZdm7mL4fBevlom7hziyI
-#          introspection-uri: http://localhost:8180/realms/eazybankdev/protocol/openid-connect/token/introspect
+#          introspection-uri: http://localhost:9000/oauth2/introspect
 
 
 #  security:
